@@ -2,63 +2,79 @@ import curses
 import random
 import time
 
+PLAY_WIDTH = 60
+PLAY_HEIGHT = 22
 
-def safe_addstr(stdscr, y, x, string, attr=0):
-    """Safely write string to curses window without crashing on screen boundaries."""
-    max_y, max_x = stdscr.getmaxyx()
-    if y < 0 or y >= max_y or x >= max_x:
+
+def get_play_bounds(stdscr):
+    """Calculate effective play area dimensions and centering offsets."""
+    term_y, term_x = stdscr.getmaxyx()
+    max_y = min(term_y, PLAY_HEIGHT)
+    max_x = min(term_x, PLAY_WIDTH)
+    offset_y = max(0, (term_y - max_y) // 2)
+    offset_x = max(0, (term_x - max_x) // 2)
+    return term_y, term_x, max_y, max_x, offset_y, offset_x
+
+
+def safe_addstr(stdscr, y, x, string, attr=0, offset_y=0, offset_x=0):
+    """Safely write string to curses window using relative play area coordinates."""
+    term_y, term_x = stdscr.getmaxyx()
+    abs_y = y + offset_y
+    abs_x = x + offset_x
+
+    if abs_y < 0 or abs_y >= term_y or abs_x >= term_x:
         return
-    available_width = max_x - x
+    available_width = term_x - abs_x
     if available_width <= 0:
         return
     truncated_str = string[:available_width]
 
     try:
-        if y == max_y - 1 and x + len(truncated_str) >= max_x:
+        if abs_y == term_y - 1 and abs_x + len(truncated_str) >= term_x:
             # Avoid write to absolute bottom-right corner which causes curses error
             if len(truncated_str) > 1:
-                stdscr.addstr(y, x, truncated_str[:-1], attr)
+                stdscr.addstr(abs_y, abs_x, truncated_str[:-1], attr)
                 try:
-                    stdscr.insch(y, max_x - 1, ord(truncated_str[-1]), attr)
+                    stdscr.insch(abs_y, term_x - 1, ord(truncated_str[-1]), attr)
                 except curses.error:
                     pass
         else:
-            stdscr.addstr(y, x, truncated_str, attr)
+            stdscr.addstr(abs_y, abs_x, truncated_str, attr)
     except curses.error:
         pass
 
 
 def draw(stdscr, cannon_x, bullets, boxes, score, lives):
-    """Render a single frame to stdscr."""
+    """Render a single frame to stdscr, centered inside larger terminal windows."""
     stdscr.erase()
-    max_y, max_x = stdscr.getmaxyx()
+    term_y, term_x, max_y, max_x, offset_y, offset_x = get_play_bounds(stdscr)
 
     # Minimum terminal dimension check
-    if max_y < 8 or max_x < 30:
-        safe_addstr(stdscr, max_y // 2, max(0, (max_x - 18) // 2), "Terminal too small!")
+    if term_y < 8 or term_x < 30:
+        safe_addstr(stdscr, term_y // 2, max(0, (term_x - 18) // 2), "Terminal too small!")
         stdscr.refresh()
         return
 
-    # Draw top and bottom borders (#)
-    safe_addstr(stdscr, 0, 0, "#" * max_x)
-    safe_addstr(stdscr, max_y - 1, 0, "#" * max_x)
+    # Draw top and bottom borders (#) relative to play area
+    safe_addstr(stdscr, 0, 0, "#" * max_x, 0, offset_y, offset_x)
+    safe_addstr(stdscr, max_y - 1, 0, "#" * max_x, 0, offset_y, offset_x)
 
     # Draw left and right borders (#)
     for y in range(1, max_y - 1):
-        safe_addstr(stdscr, y, 0, "#")
-        safe_addstr(stdscr, y, max_x - 1, "#")
+        safe_addstr(stdscr, y, 0, "#", 0, offset_y, offset_x)
+        safe_addstr(stdscr, y, max_x - 1, "#", 0, offset_y, offset_x)
 
     # Draw HUD line at top
     hud_text = f"Score: {score}   Lives: {lives}   [Cannon Shooter]"
-    safe_addstr(stdscr, 1, 2, hud_text)
+    safe_addstr(stdscr, 1, 2, hud_text, 0, offset_y, offset_x)
 
     # Draw active boxes [#]
     for box in boxes:
-        safe_addstr(stdscr, box['y'], box['x'], "[#]")
+        safe_addstr(stdscr, box['y'], box['x'], "[#]", 0, offset_y, offset_x)
 
     # Draw active bullets
     for b in bullets:
-        safe_addstr(stdscr, b['y'], b['x'], "|")
+        safe_addstr(stdscr, b['y'], b['x'], "|", 0, offset_y, offset_x)
 
     # ASCII Cannon art (width = 5, height = 3)
     cannon_art = [
@@ -74,7 +90,7 @@ def draw(stdscr, cannon_x, bullets, boxes, score, lives):
     clamped_x = max(1, min(cannon_x, max_x - 1 - cannon_width))
 
     for i, line in enumerate(cannon_art):
-        safe_addstr(stdscr, start_y + i, clamped_x, line)
+        safe_addstr(stdscr, start_y + i, clamped_x, line, 0, offset_y, offset_x)
 
     stdscr.refresh()
 
@@ -82,15 +98,15 @@ def draw(stdscr, cannon_x, bullets, boxes, score, lives):
 def show_game_over(stdscr, score):
     """Display centered game-over screen and wait for keypress."""
     stdscr.erase()
-    max_y, max_x = stdscr.getmaxyx()
+    term_y, term_x = stdscr.getmaxyx()
 
     msg1 = "GAME OVER"
     msg2 = f"Final Score: {score}"
     msg3 = "Press any key to exit"
 
-    safe_addstr(stdscr, max_y // 2 - 2, max(0, (max_x - len(msg1)) // 2), msg1)
-    safe_addstr(stdscr, max_y // 2, max(0, (max_x - len(msg2)) // 2), msg2)
-    safe_addstr(stdscr, max_y // 2 + 2, max(0, (max_x - len(msg3)) // 2), msg3)
+    safe_addstr(stdscr, term_y // 2 - 2, max(0, (term_x - len(msg1)) // 2), msg1)
+    safe_addstr(stdscr, term_y // 2, max(0, (term_x - len(msg2)) // 2), msg2)
+    safe_addstr(stdscr, term_y // 2 + 2, max(0, (term_x - len(msg3)) // 2), msg3)
 
     stdscr.refresh()
     stdscr.nodelay(False)  # Blocking input mode
@@ -109,7 +125,7 @@ def main(stdscr):
 
     stdscr.nodelay(True)  # Truly non-blocking getch
 
-    max_y, max_x = stdscr.getmaxyx()
+    term_y, term_x, max_y, max_x, offset_y, offset_x = get_play_bounds(stdscr)
     cannon_width = 5
     cannon_height = 3
     cannon_x = max(1, (max_x - cannon_width) // 2)
@@ -121,8 +137,8 @@ def main(stdscr):
     box_width = 3
 
     frame_count = 0
-    base_spawn_interval = 35  # Slower initial spawn rate
-    base_fall_interval = 6   # Slower initial fall rate
+    base_spawn_interval = 45  # Slower initial spawn rate
+    base_fall_interval = 9    # Slower initial fall rate
     max_boxes = 6
 
     # Input hold tracking & throttled movement
@@ -138,8 +154,8 @@ def main(stdscr):
         current_time = time.time()
         frame_count += 1
 
-        # Read current screen dimensions
-        max_y, max_x = stdscr.getmaxyx()
+        # Read current screen dimensions and play bounds
+        term_y, term_x, max_y, max_x, offset_y, offset_x = get_play_bounds(stdscr)
         max_cannon_x = max(1, max_x - 1 - cannon_width)
         cannon_x = max(1, min(cannon_x, max_cannon_x))
 
@@ -168,7 +184,7 @@ def main(stdscr):
                 last_left_press_time = current_time
             elif ch in (ord('d'), ord('D'), curses.KEY_RIGHT):
                 last_right_press_time = current_time
-            elif ch == ord(' '):
+            elif ch in (ord(' '), 10, 13, curses.KEY_ENTER):
                 fire_requested = True
 
         if should_quit:

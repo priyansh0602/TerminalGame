@@ -4,6 +4,8 @@ import time
 
 PLAY_WIDTH = 60
 PLAY_HEIGHT = 22
+BOX_WIDTH = 5
+BOX_SPRITE = "[###]"
 
 
 def get_play_bounds(stdscr):
@@ -68,9 +70,9 @@ def draw(stdscr, cannon_x, bullets, boxes, score, lives):
     hud_text = f"Score: {score}   Lives: {lives}   [Cannon Shooter]"
     safe_addstr(stdscr, 1, 2, hud_text, 0, offset_y, offset_x)
 
-    # Draw active boxes [#]
+    # Draw active boxes [###]
     for box in boxes:
-        safe_addstr(stdscr, box['y'], box['x'], "[#]", 0, offset_y, offset_x)
+        safe_addstr(stdscr, box['y'], box['x'], BOX_SPRITE, 0, offset_y, offset_x)
 
     # Draw active bullets
     for b in bullets:
@@ -134,11 +136,10 @@ def main(stdscr):
 
     score = 0
     lives = 3
-    box_width = 3
 
     frame_count = 0
-    base_spawn_interval = 45  # Slower initial spawn rate
-    base_fall_interval = 9    # Slower initial fall rate
+    base_spawn_interval = 45  # Initial spawn rate
+    base_fall_interval = 12   # Slowed down fall rate from 9 to 12
     max_boxes = 6
 
     # Input hold tracking & throttled movement
@@ -216,9 +217,9 @@ def main(stdscr):
                 new_bullets.append(b)
         bullets = new_bullets
 
-        # Spawn box
+        # Spawn box using global BOX_WIDTH
         if frame_count % spawn_interval == 0 and len(boxes) < max_boxes:
-            spawn_max_x = max(1, max_x - 1 - box_width)
+            spawn_max_x = max(1, max_x - 1 - BOX_WIDTH)
             if spawn_max_x >= 1:
                 spawn_x = random.randint(1, spawn_max_x)
                 boxes.append({'x': spawn_x, 'y': 2})
@@ -234,7 +235,7 @@ def main(stdscr):
                     retained_boxes.append(box)
             boxes = retained_boxes
 
-        # Collision detection (Bullets vs Boxes)
+        # Collision detection using global BOX_WIDTH (Bullets vs Boxes)
         bullets_to_remove = set()
         boxes_to_remove = set()
 
@@ -242,8 +243,8 @@ def main(stdscr):
             for box_idx, box in enumerate(boxes):
                 if box_idx in boxes_to_remove:
                     continue
-                # Horizontal collision check (box is 3 wide: [x, x+1, x+2])
-                if box['x'] <= b['x'] < box['x'] + box_width:
+                # Horizontal collision check (box is BOX_WIDTH wide)
+                if box['x'] <= b['x'] < box['x'] + BOX_WIDTH:
                     # Vertical collision tolerance (within 1 row)
                     if abs(b['y'] - box['y']) <= 1:
                         bullets_to_remove.add(b_idx)

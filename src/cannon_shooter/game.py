@@ -139,15 +139,14 @@ def main(stdscr):
 
     frame_count = 0
     base_spawn_interval = 45  # Initial spawn rate
-    base_fall_interval = 12   # Slowed down fall rate from 9 to 12
+    base_fall_interval = 12   # Initial fall rate
     max_boxes = 6
 
-    # Input hold tracking & throttled movement
+    # Input hold tracking & responsive movement
     last_left_press_time = 0.0
     last_right_press_time = 0.0
     HOLD_WINDOW = 0.15  # seconds
-    MOVE_STEP = 1       # 1 cell per movement
-    MOVE_THROTTLE = 2   # Move every 2nd frame while held
+    MOVE_STEP = 1       # 1 cell per frame for smooth & faster movement
 
     target_frame_time = 1.0 / 30.0  # 30 FPS target
 
@@ -191,15 +190,14 @@ def main(stdscr):
         if should_quit:
             break
 
-        # Process movement based on hold window and per-frame throttle
+        # Process movement based on hold window (moves every frame when held for faster response)
         left_active = (current_time - last_left_press_time) < HOLD_WINDOW
         right_active = (current_time - last_right_press_time) < HOLD_WINDOW
 
-        if frame_count % MOVE_THROTTLE == 0:
-            if left_active and not right_active:
-                cannon_x = max(1, cannon_x - MOVE_STEP)
-            elif right_active and not left_active:
-                cannon_x = min(max_cannon_x, cannon_x + MOVE_STEP)
+        if left_active and not right_active:
+            cannon_x = max(1, cannon_x - MOVE_STEP)
+        elif right_active and not left_active:
+            cannon_x = min(max_cannon_x, cannon_x + MOVE_STEP)
 
         # Process firing
         if fire_requested:
@@ -217,7 +215,7 @@ def main(stdscr):
                 new_bullets.append(b)
         bullets = new_bullets
 
-        # Spawn box using global BOX_WIDTH
+        # Spawn box
         if frame_count % spawn_interval == 0 and len(boxes) < max_boxes:
             spawn_max_x = max(1, max_x - 1 - BOX_WIDTH)
             if spawn_max_x >= 1:
@@ -235,7 +233,7 @@ def main(stdscr):
                     retained_boxes.append(box)
             boxes = retained_boxes
 
-        # Collision detection using global BOX_WIDTH (Bullets vs Boxes)
+        # Collision detection (Bullets vs Boxes)
         bullets_to_remove = set()
         boxes_to_remove = set()
 

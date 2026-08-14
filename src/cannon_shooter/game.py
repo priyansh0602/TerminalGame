@@ -121,16 +121,16 @@ def main(stdscr):
     box_width = 3
 
     frame_count = 0
-    base_spawn_interval = 35  # Slower initial spawn rate (Fix 1)
-    base_fall_interval = 6   # Slower initial fall rate (Fix 1)
+    base_spawn_interval = 35  # Slower initial spawn rate
+    base_fall_interval = 6   # Slower initial fall rate
     max_boxes = 6
 
-    # Input hold tracking & throttled movement (Fix 2)
+    # Input hold tracking & throttled movement
     last_left_press_time = 0.0
     last_right_press_time = 0.0
     HOLD_WINDOW = 0.15  # seconds
-    MOVE_STEP = 1       # 1 cell per movement (Fix 2)
-    MOVE_THROTTLE = 2   # Move every 2nd frame while held (Fix 2)
+    MOVE_STEP = 1       # 1 cell per movement
+    MOVE_THROTTLE = 2   # Move every 2nd frame while held
 
     target_frame_time = 1.0 / 30.0  # 30 FPS target
 
@@ -143,7 +143,7 @@ def main(stdscr):
         max_cannon_x = max(1, max_x - 1 - cannon_width)
         cannon_x = max(1, min(cannon_x, max_cannon_x))
 
-        # Dynamic difficulty scaling based on score (more gradual ramp: 75 pts per level) (Fix 1)
+        # Dynamic difficulty scaling based on score
         level = score // 75
         fall_interval = max(1, base_fall_interval - level)
         spawn_interval = max(10, base_spawn_interval - level * 3)
@@ -174,7 +174,7 @@ def main(stdscr):
         if should_quit:
             break
 
-        # Process movement based on hold window and per-frame throttle (Fix 2)
+        # Process movement based on hold window and per-frame throttle
         left_active = (current_time - last_left_press_time) < HOLD_WINDOW
         right_active = (current_time - last_right_press_time) < HOLD_WINDOW
 

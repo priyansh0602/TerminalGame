@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cannon-shooter"
+version = "1.0.0"
+description = "A keyboard-controlled ASCII arcade cannon shooter CLI game for your terminal."
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Priyansh" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    'windows-curses; platform_system == "Windows"',
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Games/Entertainment :: Arcade",
+]
+
+[project.scripts]
+cannon-shoot = "cannon_shooter.game:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]

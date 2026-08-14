@@ -1,9 +1,0 @@
-pyproject.toml
-src/cannon_shooter/__init__.py
-src/cannon_shooter/game.py
-src/cannon_shooter.egg-info/PKG-INFO
-src/cannon_shooter.egg-info/SOURCES.txt
-src/cannon_shooter.egg-info/dependency_links.txt
-src/cannon_shooter.egg-info/entry_points.txt
-src/cannon_shooter.egg-info/requires.txt
-src/cannon_shooter.egg-info/top_level.txt

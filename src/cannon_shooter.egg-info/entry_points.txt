@@ -1,2 +1,0 @@
-[console_scripts]
-cannon-shoot = cannon_shooter.game:run

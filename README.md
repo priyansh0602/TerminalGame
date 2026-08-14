@@ -6,6 +6,17 @@ Defend your territory against falling ASCII blocks `[#]` by operating a ground c
 
 ---
 
+## ⚡ Quick Start
+
+```bash
+pip install cannon-shooter
+cannon-shoot
+```
+
+That's it — no cloning, no setup. (Windows users: `windows-curses` installs automatically as a dependency.)
+
+---
+
 ## 🎮 Controls
 
 | Key | Action |
@@ -23,9 +34,9 @@ On some systems, firing (`Space`) may not register while a movement key is held 
 
 ---
 
-## ⚙️ Installation
+## 🛠️ Installing from Source
 
-You can install `cannon-shooter` directly using `pip`:
+If you want to clone the repository to inspect or modify the source code:
 
 ```bash
 git clone https://github.com/priyansh0602/TerminalGame.git
@@ -38,8 +49,6 @@ Once installed, launch the game from any terminal:
 ```bash
 cannon-shoot
 ```
-
-> **Note for Windows Users:** The required `windows-curses` dependency will automatically be installed during `pip install .`.
 
 ---
 

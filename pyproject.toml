@@ -23,6 +23,10 @@ classifiers = [
     "Topic :: Games/Entertainment :: Arcade",
 ]
 
+[project.urls]
+Homepage = "https://github.com/priyansh0602/cannon-shooter"
+Repository = "https://github.com/priyansh0602/cannon-shooter.git"
+
 [project.scripts]
 cannon-shoot = "cannon_shooter.game:run"
 

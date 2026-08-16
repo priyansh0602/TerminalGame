@@ -34,24 +34,6 @@ On some systems, firing (`Space`) may not register while a movement key is held 
 
 ---
 
-## 🛠️ Installing from Source
-
-If you want to clone the repository to inspect or modify the source code:
-
-```bash
-git clone https://github.com/priyansh0602/TerminalGame.git
-cd TerminalGame
-pip install .
-```
-
-Once installed, launch the game from any terminal:
-
-```bash
-cannon-shoot
-```
-
----
-
 ## 🖥️ Recommended Terminals
 
 For optimal rendering, smooth frame rates, and raw keyboard event handling, please run `cannon-shoot` in a dedicated terminal emulator:
